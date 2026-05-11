@@ -3,21 +3,37 @@ import numpy as np
 import pandas as pd
 
 
+def load_moex_history(url, date_from, date_to):
+    all_rows = []
+    columns = []
+    start = 0
+
+    while True:
+        params = {
+            "from": date_from,
+            "till": date_to,
+            "start": start
+        }
+
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        columns = data["history"]["columns"]
+        rows = data["history"]["data"]
+
+        if not rows:
+            break
+
+        all_rows.extend(rows)
+        start += len(rows)
+
+    return pd.DataFrame(all_rows, columns=columns)
+
+
 def get_history(ticker, date_from="2026-01-01", date_to="2026-05-01"):
     url = f"https://iss.moex.com/iss/history/engines/stock/markets/shares/securities/{ticker}.json"
 
-    params = {
-        "from": date_from,
-        "till": date_to
-    }
-
-    response = requests.get(url, params=params)
-    data = response.json()
-
-    columns = data["history"]["columns"]
-    rows = data["history"]["data"]
-
-    history = pd.DataFrame(rows, columns=columns)
+    history = load_moex_history(url, date_from, date_to)
 
     history = history[history["BOARDID"] == "TQBR"]
 
@@ -32,6 +48,7 @@ def get_history(ticker, date_from="2026-01-01", date_to="2026-05-01"):
         "VOLUME",      # объем в штуках
         "VALUE",       # оборот в деньгах
         "NUMTRADES",   # количество сделок
+        "CURRENCYID",   # валюта торгов
         "TRENDCLSPR"   # изменение цены закрытия в процентах
     ]]
 
@@ -40,18 +57,7 @@ def get_history(ticker, date_from="2026-01-01", date_to="2026-05-01"):
 def get_imoex(date_from="2026-01-01", date_to="2026-05-01"):
     url = "https://iss.moex.com/iss/history/engines/stock/markets/index/securities/IMOEX.json"
 
-    params = {
-        "from": date_from,
-        "till": date_to
-    }
-
-    response = requests.get(url, params=params)
-    data = response.json()
-
-    columns = data["history"]["columns"]
-    rows = data["history"]["data"]
-
-    imoex = pd.DataFrame(rows, columns=columns)
+    imoex = load_moex_history(url, date_from, date_to)
 
     imoex = imoex[[
         "TRADEDATE",
