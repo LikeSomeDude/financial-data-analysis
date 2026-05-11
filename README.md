@@ -56,5 +56,15 @@
 ### Как установить библиотеки
 ```bash
 python -m ensurepip --upgrade
-py -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
+запуск программы с терминала:
+```bash
+python -m streamlit run app.py
+```
+
+
+до 20% годовых      — низкая волатильность
+20–40% годовых      — умеренная волатильность
+40–60% годовых      — высокая волатильность
+выше 60% годовых    — очень высокая волатильность
